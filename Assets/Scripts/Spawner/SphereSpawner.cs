@@ -1,22 +1,12 @@
 using Code_Advanced_Enemy_Spawn;
-using System.Collections;
-using UnityEngine;
 
 public class SphereSpawner : Spawner
 {
-    protected override IEnumerator StartSpawning()
+    protected override void Validate()
     {
-        float timeInterval = 2;
-        WaitForSeconds waitForSeconds = new WaitForSeconds(timeInterval);
-
-        while (true)
+        if ((_enemyTemplate is EnemySphere) == false)
         {
-            if (GetTemplateType() == typeof(EnemySphere))
-                SpawnEnemy();
-            else
-                StopCoroutine(SpawningCoroutine);
-
-            yield return waitForSeconds;
+            _enemyTemplate = null;
         }
     }
 }

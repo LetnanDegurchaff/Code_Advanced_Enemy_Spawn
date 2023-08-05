@@ -1,34 +1,25 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Code_Advanced_Enemy_Spawn
 {
     public abstract class Spawner : MonoBehaviour
     {
-        [SerializeField] private Enemy _enemyTemplate;
-        [SerializeField] private List<Transform> _serializePath;
-
-        private List<IReadOnlyTransform> _path;
-
-        protected Coroutine SpawningCoroutine;
+        [SerializeField] private Path _path;
+        [SerializeField] protected Enemy _enemyTemplate;
 
         private void Awake()
         {
-            _path = new List<IReadOnlyTransform>();
-
-            foreach (Transform transform in _serializePath)
-                _path.Add(new IReadOnlyTransform(transform));
-
-            SpawningCoroutine = StartCoroutine(StartSpawning());
+            Validate();
+            StartCoroutine(StartSpawning());
+            StartCoroutine(StartRotating());
         }
 
-        protected Type GetTemplateType() => _enemyTemplate.GetType();
+        protected abstract void Validate();
 
         protected virtual IEnumerator StartSpawning()
         {
-            float timeInterval = 2;
+            float timeInterval = 1;
             WaitForSeconds waitForSeconds = new WaitForSeconds(timeInterval);
 
             while (true)
@@ -39,9 +30,22 @@ namespace Code_Advanced_Enemy_Spawn
             }
         }
 
-        protected void SpawnEnemy() => 
-            Instantiate<Enemy>(_enemyTemplate).Init(GetPath());
+        protected virtual IEnumerator StartRotating()
+        {
+            WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
 
-        private IReadOnlyList<IReadOnlyTransform> GetPath() => _path;
+            while (true)
+            {
+                _path.transform.Rotate(0, 1, 0);
+
+                yield return waitForFixedUpdate;
+            }
+        }
+
+        protected void SpawnEnemy()
+        {
+            if (_enemyTemplate != null)
+                Instantiate<Enemy>(_enemyTemplate).Init(_path as IReadOnlyPath);
+        }
     }
 }

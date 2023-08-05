@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -8,35 +7,23 @@ namespace Code_Advanced_Enemy_Spawn
     {
         [SerializeField] private int _speed;
 
-        private IReadOnlyList<IReadOnlyTransform> _path;
-        private Vector3 _target;
-        private int _pathIndex;
+        private IReadOnlyPath _path;
+        private IReadOnlyPoint _target;
 
         private void Update()
         {
-            if (transform.position == _target)
-                UpdateTarget();
+            if (transform.position == _target.Position)
+                _target = _path.GetNextTarget(_target);
 
             transform.position = Vector3.MoveTowards
-                (transform.position, _target, _speed * Time.deltaTime);
+                (transform.position, _target.Position, _speed * Time.deltaTime);
         }
 
-        private void UpdateTarget()
-        {
-            if (_pathIndex >= _path.Count - 1)
-                _pathIndex = 0;
-            else
-                _pathIndex++;
-
-            _target = _path[_pathIndex].Position;
-        }
-
-        public void Init(IReadOnlyList<IReadOnlyTransform> path)
+        public void Init(IReadOnlyPath path)
         {
             _path = path;
-            _target = _path.First().Position;
-            transform.position = _target;
-            _pathIndex = 0;
+            _target = _path.Points.First();
+            transform.position = _target.Position;
         }
     }
 }
